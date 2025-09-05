@@ -60,17 +60,13 @@ export default function AccountForm({
       allure_base: allure || null,
     };
 
-    // upsert (insert si n'existe pas, update sinon)
     const { error } = await supabase.from("profiles").upsert(payload, {
       onConflict: "id",
     });
 
     setSaving(false);
-    if (error) {
-      setErr(error.message);
-    } else {
-      setMsg("Profil enregistré ✅");
-    }
+    if (error) setErr(error.message);
+    else setMsg("Profil enregistré ✅");
   };
 
   const onLogout = async () => {
