@@ -13,6 +13,7 @@ type NavItem = {
 const navItems: NavItem[] = [
   { href: "/account",     label: "Mon profil" },
   { href: "/plans",      label: "Mes plans nutrition" },
+  { href: "/suivi",      label: "Suivi nutrition" },
   { href: "/catalogue",  label: "Catalogue produits" },
 ];
 
