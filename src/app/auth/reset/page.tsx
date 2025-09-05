@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import React from "react";
 import { createClient } from "@/lib/supabase/client";
 
 export default function ResetRequestPage() {
@@ -16,13 +16,12 @@ export default function ResetRequestPage() {
     setErr(null);
     setMsg(null);
 
-    // Détermine l'origine (local ou prod)
+    // Détermine l'origine (local ou prod) et construit le redirect proprement
     const origin =
       typeof window !== "undefined"
         ? window.location.origin
         : process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 
-    // Enlève un éventuel slash final et construit l’URL complète
     const redirectTo = `${origin.replace(/\/$/, "")}/auth/update-password`;
 
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -58,3 +57,18 @@ export default function ResetRequestPage() {
             autoComplete="email"
           />
         </label>
+
+        {err && <p className="text-sm text-red-600">{err}</p>}
+        {msg && <p className="text-sm text-green-700">{msg}</p>}
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="rounded-lg bg-black text-white px-4 py-2 disabled:opacity-60"
+        >
+          {loading ? "Envoi…" : "Envoyer le lien"}
+        </button>
+      </form>
+    </div>
+  );
+}
