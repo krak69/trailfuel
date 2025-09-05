@@ -5,7 +5,10 @@ import AccountForm from "./ui/AccountForm";
 
 export default async function AccountPage() {
   const supabase = createServerSupabase();
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   if (!user) redirect("/auth/login");
 
   let { data: profile } = await supabase
@@ -25,7 +28,7 @@ export default async function AccountPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto py-8">
+    <div className="max-w-5xl mx-auto py-8">
       <h1 className="text-2xl font-semibold mb-2">Mon compte</h1>
       <p className="text-sm text-black/70 mb-6">Identifiant : {user.email}</p>
       <AccountForm userId={user.id} initialProfile={profile} />
