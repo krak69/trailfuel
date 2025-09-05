@@ -32,12 +32,6 @@ export default async function PlansIndexPage() {
     <div className="max-w-6xl mx-auto">
       <div className="mb-6 flex items-center justify-between gap-4">
         <h1 className="text-2xl font-semibold">Mes plans</h1>
-        <Link
-          href="/plans/new"
-          className="rounded-lg bg-black px-4 py-2 text-white"
-        >
-          Nouveau plan
-        </Link>
       </div>
 
       <PlansTable initialPlans={plans ?? []} />
