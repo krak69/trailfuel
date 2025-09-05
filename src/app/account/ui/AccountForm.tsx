@@ -17,7 +17,7 @@ type Profile = {
   // MVP
   carbs_target_gph_min?: number | null;
   carbs_target_gph_max?: number | null;
-  fuel_forms?: string[] | null; // ['gel','drink_mix','bar','real_food']
+  fuel_forms?: string[] | null; // ['Gel','Purée','Boisson effort','Barre','Autre']
   flavor_avoid?: string[] | null;
   fluid_target_mlph?: number | null;
   sodium_target_mgph?: number | null;
