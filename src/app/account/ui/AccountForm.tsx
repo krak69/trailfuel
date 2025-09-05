@@ -12,9 +12,9 @@ type Profile = {
   height_cm?: number | null;
   age_years?: number | null;
   objectifs?: string | null;
-  allure_base?: string | null;
+  // allure_base?: string | null; // supprimé de l'UI
 
-  diet_type?: string | null;     // omnivore | vegetarian | vegan | other
+  diet_type?: string | null;     // omnivore | vegetarien | vegan | autre
   allergens?: string[] | null;
   consent_data?: boolean | null;
 
@@ -30,8 +30,8 @@ type Profile = {
   best_marathon_time?: string | null;
 } | null;
 
-const DIET_OPTIONS = ["omnivore", "vegetarian", "vegan", "other"] as const;
-const CAFFEINE_SENSITIVITY = ["Basse", "Moyenne", "Forte"] as const;
+const DIET_OPTIONS = ["omnivore", "vegetarien", "vegan", "autre"] as const;
+const CAFFEINE_SENSITIVITY = ["basse", "moyenne", "haute"] as const;
 
 function parseCSV(value: string): string[] {
   return value
@@ -77,9 +77,6 @@ export default function AccountForm({
   );
   const [objectifs, setObjectifs] = React.useState<string>(
     initialProfile?.objectifs ?? ""
-  );
-  const [allure, setAllure] = React.useState<string>(
-    initialProfile?.allure_base ?? ""
   );
 
   const [dietType, setDietType] = React.useState<string>(
@@ -148,7 +145,6 @@ export default function AccountForm({
       height_cm: toFloatOrNull(height),
       age_years: toIntOrNull(age),
       objectifs: objectifs || null,
-      allure_base: allure || null,
 
       diet_type: dietType || null,
       allergens: parseCSV(allergensText),
@@ -253,71 +249,12 @@ export default function AccountForm({
             placeholder="Ex : SaintéLyon 2025 en 12h, préparation été, etc."
           />
         </label>
-
-        <label className="grid gap-1">
-          <span className="text-sm">Allure de base (ex. 5:30 / km)</span>
-          <input
-            className="border rounded-lg px-3 py-2"
-            value={allure}
-            onChange={(e) => setAllure(e.target.value)}
-            placeholder="mm:ss / km"
-          />
-        </label>
-      </section>
-
-      {/* ========= MVP — Contraintes alimentaires ========= */}
-      <section className="grid gap-4">
-        <h2 className="text-lg font-semibold">Contraintes alimentaires — MVP</h2>
-        <div className="grid md:grid-cols-3 gap-4">
-          <label className="grid gap-1">
-            <span className="text-sm">Régime</span>
-            <select
-              className="border rounded-lg px-3 py-2"
-              value={dietType}
-              onChange={(e) => setDietType(e.target.value)}
-            >
-              {DIET_OPTIONS.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="grid gap-1 md:col-span-2">
-            <span className="text-sm">Allergènes / intolérances (CSV)</span>
-            <input
-              className="border rounded-lg px-3 py-2"
-              value={allergensText}
-              onChange={(e) => setAllergensText(e.target.value)}
-              placeholder="ex. gluten, lactose, nuts"
-            />
-          </label>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <label className="inline-flex items-center gap-2">
-            <input
-              type="checkbox"
-              checked={consentData}
-              onChange={(e) => setConsentData(e.target.checked)}
-            />
-            <span className="text-sm">J’accepte l’utilisation de mes données (RGPD)</span>
-          </label>
-
-          <button
-            type="button"
-            onClick={onLogout}
-            className="rounded-lg border px-4 py-2 ml-auto"
-          >
-            Se déconnecter
-          </button>
-        </div>
       </section>
 
       {/* ========= V1 / V2 — Physiologie & performances ========= */}
       <section className="grid gap-4">
         <h2 className="text-lg font-semibold">Physiologie & performances — V1/V2</h2>
+
         <div className="grid md:grid-cols-4 gap-4">
           <label className="grid gap-1">
             <span className="text-sm">Taux de sudation (L/h) – frais</span>
@@ -328,9 +265,10 @@ export default function AccountForm({
               className="border rounded-lg px-3 py-2"
               value={sweatCool}
               onChange={(e) => setSweatCool(e.target.value)}
-              placeholder="ex. 0.6"
+              placeholder="≈ 0.6 (moy. globale 0.4–0.8)"
             />
           </label>
+
           <label className="grid gap-1">
             <span className="text-sm">Taux de sudation (L/h) – chaud</span>
             <input
@@ -340,9 +278,10 @@ export default function AccountForm({
               className="border rounded-lg px-3 py-2"
               value={sweatHot}
               onChange={(e) => setSweatHot(e.target.value)}
-              placeholder="ex. 1.0"
+              placeholder="≈ 1.0 (moy. globale 0.8–1.2)"
             />
           </label>
+
           <label className="grid gap-1">
             <span className="text-sm">Perte sodée (mg/L)</span>
             <input
@@ -351,9 +290,10 @@ export default function AccountForm({
               className="border rounded-lg px-3 py-2"
               value={sodiumLoss}
               onChange={(e) => setSodiumLoss(e.target.value)}
-              placeholder="ex. 700"
+              placeholder="≈ 800 (moy. globale 500–1000)"
             />
           </label>
+
           <label className="inline-flex items-center gap-2 mt-6">
             <input
               type="checkbox"
@@ -426,8 +366,8 @@ export default function AccountForm({
         </div>
       </section>
 
-      {/* CTA */}
-      <div className="flex items-center gap-2">
+      {/* ======= Bas de page : Enregistrer + RGPD + Déconnexion ======= */}
+      <div className="flex flex-wrap items-center gap-4">
         <button
           type="submit"
           disabled={saving}
@@ -435,9 +375,31 @@ export default function AccountForm({
         >
           {saving ? "Enregistrement…" : "Enregistrer"}
         </button>
-        {err && <p className="text-red-600 text-sm">{err}</p>}
-        {msg && <p className="text-green-700 text-sm">{msg}</p>}
+
+        <label className="inline-flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={consentData}
+            onChange={(e) => setConsentData(e.target.checked)}
+          />
+          <span className="text-sm">J’accepte l’utilisation de mes données (RGPD)</span>
+        </label>
+
+        <button
+          type="button"
+          onClick={onLogout}
+          className="rounded-lg border px-4 py-2 ml-auto"
+        >
+          Se déconnecter
+        </button>
       </div>
+
+      {(err || msg) && (
+        <div className="flex items-center gap-4">
+          {err && <p className="text-red-600 text-sm">{err}</p>}
+          {msg && <p className="text-green-700 text-sm">{msg}</p>}
+        </div>
+      )}
     </form>
   );
 }
