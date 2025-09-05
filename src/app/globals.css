@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Design tokens / helpers */
+@layer components {
+  .container-wide {
+    @apply max-w-[1440px] mx-auto px-4 md:px-8;
+  }
+  .section-bleed {
+    @apply w-screen relative left-1/2 right-1/2 -mx-[50vw];
+  }
+  .section-inner {
+    @apply container-wide;
+  }
+  .card {
+    @apply bg-white/80 rounded-2xl shadow p-4;
+  }
+  .btn {
+    @apply inline-flex items-center justify-center rounded-xl font-medium;
+  }
+}
+html, body { height: 100%; }
+body { @apply bg-gray-50 text-gray-900; }
