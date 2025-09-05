@@ -15,21 +15,40 @@ export default function ResetRequestPage() {
     setLoading(true);
     setErr(null);
     setMsg(null);
+
+    // Détermine l'origine (local ou prod)
+    const origin =
+      typeof window !== "undefined"
+        ? window.location.origin
+        : process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
+    // Enlève un éventuel slash final et construit l’URL complète
+    const redirectTo = `${origin.replace(/\/$/, "")}/auth/update-password`;
+
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/update-password`, // IMPORTANT
+      redirectTo,
     });
+
     setLoading(false);
 
-    if (error) setErr(error.message);
-    else setMsg("E-mail envoyé. Clique sur le lien pour définir un nouveau mot de passe.");
+    if (error) {
+      setErr(error.message);
+    } else {
+      setMsg(
+        "Un e-mail de réinitialisation vient d’être envoyé. Clique sur le lien reçu pour définir ton nouveau mot de passe ✅"
+      );
+    }
   };
 
   return (
     <div className="max-w-md mx-auto py-10">
-      <h1 className="text-2xl font-semibold mb-4">Réinitialiser le mot de passe</h1>
+      <h1 className="text-2xl font-semibold mb-4">
+        Réinitialiser le mot de passe
+      </h1>
+
       <form onSubmit={onSubmit} className="grid gap-3">
         <label className="grid gap-1">
-          <span className="text-sm">Email</span>
+          <span className="text-sm">Adresse e-mail</span>
           <input
             type="email"
             className="border rounded-lg px-3 py-2"
@@ -39,16 +58,3 @@ export default function ResetRequestPage() {
             autoComplete="email"
           />
         </label>
-        {err && <p className="text-sm text-red-600">{err}</p>}
-        {msg && <p className="text-sm text-green-700">{msg}</p>}
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded-lg bg-black text-white px-4 py-2 disabled:opacity-60"
-        >
-          {loading ? "Envoi…" : "Envoyer le lien"}
-        </button>
-      </form>
-    </div>
-  );
-}
