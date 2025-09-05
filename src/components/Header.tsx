@@ -7,8 +7,9 @@ import * as React from "react";
 
 type NavItem = { href: string; label: string };
 
+// Remplacement de "Import GPX" -> "Nouveau plan" vers /plans/new
 const navItems: NavItem[] = [
-  { href: "/plans/new",  label: "Nouveau plan" },   // ✅ remplace Import GPX
+  { href: "/plans/new",  label: "Nouveau plan" },
   { href: "/profil",     label: "Mon profil" },
   { href: "/nutrition",  label: "Paramètres nutrition" },
   { href: "/plans",      label: "Mes plans" },
