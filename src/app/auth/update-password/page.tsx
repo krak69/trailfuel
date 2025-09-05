@@ -1,25 +1,84 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function UpdatePasswordPage() {
   const supabase = React.useMemo(createClient, []);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
   const [password, setPassword] = React.useState("");
   const [confirm, setConfirm] = React.useState("");
   const [loading, setLoading] = React.useState(false);
   const [err, setErr] = React.useState<string | null>(null);
   const [msg, setMsg] = React.useState<string | null>(null);
+  const [sessionReady, setSessionReady] = React.useState(false);
+
+  // 1) À l’arrivée depuis l’email, créer la session
+  React.useEffect(() => {
+    let cancelled = false;
+
+    async function ensureSession() {
+      setErr(null);
+
+      // Nouveau format: ?code=XXXX
+      const code = searchParams?.get("code");
+      if (code) {
+        const { error } = await supabase.auth.exchangeCodeForSession(code);
+        if (cancelled) return;
+        if (error) {
+          setErr(error.message || "Lien invalide ou expiré.");
+          setSessionReady(false);
+          return;
+        }
+        setSessionReady(true);
+        return;
+      }
+
+      // Ancien format: #access_token=...&refresh_token=...
+      const hash = typeof window !== "undefined" ? window.location.hash : "";
+      if (hash?.startsWith("#")) {
+        const h = new URLSearchParams(hash.slice(1));
+        const access_token = h.get("access_token");
+        const refresh_token = h.get("refresh_token");
+        if (access_token && refresh_token) {
+          const { error } = await supabase.auth.setSession({
+            access_token,
+            refresh_token,
+          });
+          if (cancelled) return;
+          if (error) {
+            setErr(error.message || "Lien invalide ou expiré.");
+            setSessionReady(false);
+            return;
+          }
+          setSessionReady(true);
+          return;
+        }
+      }
+
+      // Rien dans l’URL → on ne peut pas créer la session
+      setErr("Lien de réinitialisation invalide ou expiré.");
+      setSessionReady(false);
+    }
+
+    ensureSession();
+    return () => {
+      cancelled = true;
+    };
+  }, [searchParams, supabase]);
 
   const onSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
     setErr(null);
+
     if (password !== confirm) {
       setErr("Les mots de passe ne correspondent pas.");
       return;
     }
+
     setLoading(true);
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
@@ -28,7 +87,6 @@ export default function UpdatePasswordPage() {
       setErr(error.message);
     } else {
       setMsg("Mot de passe mis à jour ✅");
-      // petite redirection vers le login
       setTimeout(() => router.push("/auth/login"), 1000);
     }
   };
@@ -36,6 +94,7 @@ export default function UpdatePasswordPage() {
   return (
     <div className="max-w-md mx-auto py-10">
       <h1 className="text-2xl font-semibold mb-4">Nouveau mot de passe</h1>
+
       <form onSubmit={onSubmit} className="grid gap-3">
         <label className="grid gap-1">
           <span className="text-sm">Nouveau mot de passe</span>
@@ -49,6 +108,7 @@ export default function UpdatePasswordPage() {
             autoComplete="new-password"
           />
         </label>
+
         <label className="grid gap-1">
           <span className="text-sm">Confirmer</span>
           <input
@@ -61,11 +121,18 @@ export default function UpdatePasswordPage() {
             autoComplete="new-password"
           />
         </label>
-        {err && <p className="text-sm text-red-600">{err}</p>}
+
+        {!sessionReady && (
+          <p className="text-sm text-red-600">
+            {err ?? "Auth session missing! Ouvre la page via le lien reçu par email."}
+          </p>
+        )}
+        {err && sessionReady && <p className="text-sm text-red-600">{err}</p>}
         {msg && <p className="text-sm text-green-700">{msg}</p>}
+
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || !sessionReady}
           className="rounded-lg bg-black text-white px-4 py-2 disabled:opacity-60"
         >
           {loading ? "Mise à jour…" : "Mettre à jour le mot de passe"}
