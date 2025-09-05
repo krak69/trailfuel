@@ -53,7 +53,9 @@ export default function LoginPage() {
             autoComplete="current-password"
           />
         </label>
+
         {error && <p className="text-red-600 text-sm">{error}</p>}
+
         <button
           type="submit"
           disabled={loading}
@@ -61,6 +63,13 @@ export default function LoginPage() {
         >
           {loading ? "Connexion…" : "Se connecter"}
         </button>
+
+        {/* lien mot de passe oublié */}
+        <div className="mt-1">
+          <Link href="/auth/reset" className="text-sm underline">
+            Mot de passe oublié ?
+          </Link>
+        </div>
       </form>
 
       <p className="mt-4 text-sm">
