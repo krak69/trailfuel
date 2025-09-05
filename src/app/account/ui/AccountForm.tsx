@@ -23,7 +23,7 @@ type Profile = {
   sweat_rate_lph_hot?: number | null;
   sodium_loss_mg_per_l?: number | null;
   heat_acclimated?: boolean | null;
-  caffeine_sensitivity?: string | null; // low|medium|high
+  caffeine_sensitivity?: string | null; // basse|moyenne|haute
   gi_tolerance_score?: number | null;   // 1..5
   best_10k_time?: string | null;        // 'hh:mm:ss'
   best_half_time?: string | null;
@@ -31,7 +31,7 @@ type Profile = {
 } | null;
 
 const DIET_OPTIONS = ["omnivore", "vegetarian", "vegan", "other"] as const;
-const CAFFEINE_SENSITIVITY = ["low", "medium", "high"] as const;
+const CAFFEINE_SENSITIVITY = ["Basse", "Moyenne", "Forte"] as const;
 
 function parseCSV(value: string): string[] {
   return value
