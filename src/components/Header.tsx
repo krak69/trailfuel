@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 type NavItem = {
@@ -42,8 +43,15 @@ export default function Header() {
           {/* Gauche : Logo / Nom */}
           <div className="flex items-center gap-2">
             <Link href="/" className="flex items-center gap-2">
-              {/* Remplacez par votre image si besoin */}
-              <div className="h-8 w-8 rounded-lg bg-black/80" aria-hidden />
+              <div className="h-8 w-8 rounded-lg bg-black/80 grid place-items-center">
+    <Image
+      src="/logo-white.png"       
+      alt="TrailFuel"
+      width={20}                  // ajuste si besoin (<= 32 pour rester dans 8x8)
+      height={20}
+      priority
+    />
+  </div>
               <span className="text-lg font-semibold tracking-tight">TrailFuel</span>
             </Link>
           </div>
