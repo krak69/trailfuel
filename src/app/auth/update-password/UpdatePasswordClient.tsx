@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -16,19 +16,43 @@ export default function UpdatePasswordClient() {
   const [msg, setMsg] = React.useState<string | null>(null);
   const [sessionReady, setSessionReady] = React.useState(false);
 
-  // Récupération du code/token dans l’URL après clic sur l’email
+  // Pour le cas "code verifier manquant", on propose un renvoi d'email directement ici
+  const [resendEmail, setResendEmail] = React.useState("");
+  const [resendLoading, setResendLoading] = React.useState(false);
+  const [resendMsg, setResendMsg] = React.useState<string | null>(null);
+  const [resendErr, setResendErr] = React.useState<string | null>(null);
+  const [suggestResend, setSuggestResend] = React.useState(false);
+
   React.useEffect(() => {
     let cancelled = false;
+
     (async () => {
       setErr(null);
+      setMsg(null);
 
-      // Nouveau format Supabase → ?code=...
+      // Si une session existe déjà (ex: utilisateur connecté), inutile d'échanger un code
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (!cancelled && sessionData?.session) {
+        setSessionReady(true);
+        return;
+      }
+
+      // 1) Nouveau flux Supabase: ?code=xxxx (PKCE)
       const code = searchParams?.get("code");
       if (code) {
         const { error } = await supabase.auth.exchangeCodeForSession(code);
         if (cancelled) return;
         if (error) {
-          setErr(error.message || "Lien invalide ou expiré.");
+          // Cas typique: "invalid request: both auth code and code verifier should be non-empty"
+          if (/code verifier/i.test(error.message)) {
+            setErr(
+              "Ce lien a été ouvert dans un navigateur ou un domaine différent de celui qui a demandé la réinitialisation. " +
+                "Renvoyez l’e-mail depuis ce navigateur et cliquez le lien depuis le même domaine."
+            );
+            setSuggestResend(true);
+          } else {
+            setErr(error.message || "Lien de réinitialisation invalide ou expiré.");
+          }
           setSessionReady(false);
           return;
         }
@@ -36,7 +60,7 @@ export default function UpdatePasswordClient() {
         return;
       }
 
-      // Ancien format Supabase → #access_token & refresh_token
+      // 2) Ancien flux Supabase: #access_token & #refresh_token dans le hash
       const hash = typeof window !== "undefined" ? window.location.hash : "";
       if (hash?.startsWith("#")) {
         const h = new URLSearchParams(hash.slice(1));
@@ -49,7 +73,7 @@ export default function UpdatePasswordClient() {
           });
           if (cancelled) return;
           if (error) {
-            setErr(error.message || "Lien invalide ou expiré.");
+            setErr(error.message || "Lien de réinitialisation invalide ou expiré.");
             setSessionReady(false);
             return;
           }
@@ -58,7 +82,7 @@ export default function UpdatePasswordClient() {
         }
       }
 
-      // Rien trouvé dans l’URL
+      // 3) Rien trouvé dans l'URL
       setErr("Lien de réinitialisation invalide ou expiré.");
       setSessionReady(false);
     })();
@@ -68,10 +92,10 @@ export default function UpdatePasswordClient() {
     };
   }, [searchParams, supabase]);
 
-  // Soumission du nouveau mot de passe
   const onSubmit: React.FormEventHandler<HTMLFormElement> = async (e) => {
     e.preventDefault();
     setErr(null);
+    setMsg(null);
 
     if (password !== confirm) {
       setErr("Les mots de passe ne correspondent pas.");
@@ -86,7 +110,41 @@ export default function UpdatePasswordClient() {
       setErr(error.message);
     } else {
       setMsg("Mot de passe mis à jour ✅");
+      // petite redirection vers le login après confirmation
       setTimeout(() => router.push("/auth/login"), 1000);
+    }
+  };
+
+  // Renvoi d'email depuis cette page si PKCE cassé
+  const onResend: React.FormEventHandler<HTMLFormElement> = async (e) => {
+    e.preventDefault();
+    setResendErr(null);
+    setResendMsg(null);
+    setResendLoading(true);
+
+    try {
+      const origin =
+        typeof window !== "undefined"
+          ? window.location.origin
+          : process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
+      const redirectTo = `${origin.replace(/\/$/, "")}/auth/update-password`;
+
+      const { error } = await supabase.auth.resetPasswordForEmail(resendEmail, {
+        redirectTo,
+      });
+
+      if (error) {
+        setResendErr(error.message);
+      } else {
+        setResendMsg(
+          "E-mail de réinitialisation renvoyé ✅ Ouvre le lien dans ce même navigateur et ce même domaine."
+        );
+      }
+    } catch (e: any) {
+      setResendErr(e?.message ?? "Erreur lors de l’envoi de l’e-mail.");
+    } finally {
+      setResendLoading(false);
     }
   };
 
@@ -123,21 +181,8 @@ export default function UpdatePasswordClient() {
 
         {!sessionReady && (
           <p className="text-sm text-red-600">
-            {err ??
-              "Auth session missing! Ouvre cette page via le lien reçu par email."}
+            {err ?? "Auth session missing! Ouvre cette page via le lien reçu par email."}
           </p>
         )}
         {err && sessionReady && <p className="text-sm text-red-600">{err}</p>}
-        {msg && <p className="text-sm text-green-700">{msg}</p>}
-
-        <button
-          type="submit"
-          disabled={loading || !sessionReady}
-          className="rounded-lg bg-black text-white px-4 py-2 disabled:opacity-60"
-        >
-          {loading ? "Mise à jour…" : "Mettre à jour le mot de passe"}
-        </button>
-      </form>
-    </div>
-  );
-}
+        {msg && <p className="text-sm
