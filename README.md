@@ -43,3 +43,8 @@ npm run dev
 - `src/lib/*` : parse GPX, supabase clients, helpers
 
 > Attention : pour la carte, ajoute une clé de style ou utilise le style par défaut (libre) si disponible.
+
+
+## ⚠️ Dépannage Policies déjà existantes
+- Si vous obtenez `policy "..." already exists`, exécutez `supabase/migrations/001_policies_fix.sql`.
+- Ce script supprime puis recrée proprement toutes les policies RLS.
