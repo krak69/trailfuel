@@ -1,7 +1,7 @@
 'use client';
 import useSWR from 'swr';
 import Link from 'next/link';
-import AuthGuard from '@/components/AuthGuard';
+import AuthGuard from '../../components/AuthGuard';
 
 const fetcher = (url:string)=>fetch(url).then(r=>r.json());
 
