@@ -1,8 +1,9 @@
 {
-  "deleted": [
-    "src/pages/api/auth/[...nextauth].ts"
-  ],
   "modified_or_added": [
-    "tsconfig.json"
-  ]
+    "src/lib/supabase/client.ts",
+    "src/components/AuthGuard.tsx",
+    "src/components/PlanPdf.tsx",
+    "src/lib/parseGpx.ts"
+  ],
+  "deleted": []
 }

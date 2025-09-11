@@ -21,12 +21,12 @@ export async function generatePlanPdf(opts: {
   const Doc = () => (
     <Document>
       <Page size="A4" style={styles.page}>
-        <Text style={styles.h1}>{plan.name}</Text>
+        <Text style={styles.h1}>{plan?.name || 'Plan'}</Text>
         <View style={styles.row}>
-          <View style={styles.card}><Text>Distance: {Math.round((plan.distance_km||0)*10)/10} km</Text></View>
-          <View style={styles.card}><Text>D+: {Math.round(plan.ascent_m||0)} m</Text></View>
-          <View style={styles.card}><Text>D-: {Math.round(plan.descent_m||0)} m</Text></View>
-          <View style={styles.card}><Text>Durée cible: {plan.target_duration_min||'—'} min</Text></View>
+          <View style={styles.card}><Text>Distance: {Math.round((plan?.distance_km||0)*10)/10} km</Text></View>
+          <View style={styles.card}><Text>D+: {Math.round(plan?.ascent_m||0)} m</Text></View>
+          <View style={styles.card}><Text>D-: {Math.round(plan?.descent_m||0)} m</Text></View>
+          <View style={styles.card}><Text>Durée cible: {plan?.target_duration_min||'—'} min</Text></View>
         </View>
         {elevationPngDataUrl && (<Image src={elevationPngDataUrl} />)}
         <View>
@@ -38,8 +38,8 @@ export async function generatePlanPdf(opts: {
               <Text style={{...styles.th, width: 100}}>type</Text>
               <Text style={{...styles.th, width: 260}}>Produits</Text>
             </View>
-            {waypoints.map((w:any)=>{
-              const lines = plan_products.filter((p:any)=>p.waypoint_id===w.id);
+            {waypoints?.map((w:any)=>{
+              const lines = (plan_products||[]).filter((p:any)=>p.waypoint_id===w.id);
               const products = lines.length? lines.map((p:any)=>`${p.products.name} x${p.qty}`).join(', ') : '—';
               return (
                 <View key={w.id} style={styles.tr}>
@@ -59,6 +59,6 @@ export async function generatePlanPdf(opts: {
   const blob = await pdf(<Doc />).toBlob();
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = `plan_${plan.id}.pdf`; a.click();
+  a.href = url; a.download = `plan_${plan?.id||'export'}.pdf`; a.click();
   URL.revokeObjectURL(url);
 }

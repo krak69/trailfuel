@@ -8,18 +8,17 @@ export default function AuthGuard({ children }:{ children: React.ReactNode }){
   const router = useRouter();
 
   useEffect(()=>{
+    let unsub: any;
     (async()=>{
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        router.replace('/auth/login');
-      } else {
-        setReady(true);
-      }
-      const { data: authListener } = supabase.auth.onAuthStateChange((_event, session)=>{
-        if(!session) router.replace('/auth/login');
+      if (!session) router.replace('/auth/login');
+      else setReady(true);
+      const { data: authListener } = supabase.auth.onAuthStateChange((_event, sess)=>{
+        if(!sess) router.replace('/auth/login');
       });
-      return ()=>{ authListener.subscription.unsubscribe(); }
+      unsub = authListener.subscription.unsubscribe;
     })();
+    return ()=>{ try{unsub?.()}catch{} };
   }, [router]);
 
   if (!ready) return <div className="p-6">Vérification de la session…</div>;

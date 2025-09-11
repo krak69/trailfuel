@@ -1,6 +1,5 @@
 import { gpx } from '@tmcw/togeojson'
 import type { FeatureCollection, LineString } from 'geojson'
-import { ParsedGpx, ParsedPoint } from './types'
 
 function haversine(lat1:number, lon1:number, lat2:number, lon2:number){
   const R = 6371000;
@@ -11,6 +10,16 @@ function haversine(lat1:number, lon1:number, lat2:number, lon2:number){
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
 
+export type ParsedPoint = { lat:number; lon:number; ele:number; dist_km:number; t_s?:number };
+export type ParsedGpx = {
+  name?: string;
+  points: ParsedPoint[];
+  totalDistance: number;
+  totalAscent: number;
+  totalDescent: number;
+  hasTime: boolean;
+};
+
 export function parseGpxText(xmlText:string): ParsedGpx {
   const doc = new DOMParser().parseFromString(xmlText, 'text/xml');
   const fc = gpx(doc) as FeatureCollection;
@@ -20,7 +29,6 @@ export function parseGpxText(xmlText:string): ParsedGpx {
   const name = line.properties?.name || 'Parcours';
   let totalDist = 0, totalUp = 0, totalDown = 0;
   const pts: ParsedPoint[] = [];
-  let prev = None as any;
   for (let i=0;i<coords.length;i++){
     const [lon,lat,eleRaw] = coords[i];
     const ele = Number(eleRaw||0);
