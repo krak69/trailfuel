@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #0b1020;
+  --fg: #e7ecf7;
+}
+body { background: var(--bg); color: var(--fg); }
+a { color: #9dd6ff; }
+.card { @apply rounded-2xl p-4 bg-white/5 border border-white/10; }
+.btn { @apply rounded-xl px-4 py-2 bg-white/10 hover:bg-white/20 transition; }
+.input { @apply px-3 py-2 rounded-lg bg-white/5 border border-white/15 w-full; }
+.table { @apply w-full text-sm; }
+th, td { @apply px-2 py-2 border-b border-white/10; }
