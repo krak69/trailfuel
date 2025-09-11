@@ -1,0 +1,8 @@
+{
+  "deleted": [
+    "src/pages/api/auth/[...nextauth].ts"
+  ],
+  "modified_or_added": [
+    "tsconfig.json"
+  ]
+}
