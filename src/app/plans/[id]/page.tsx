@@ -2,8 +2,8 @@
 import useSWR from 'swr';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import AuthGuard from '@/components/AuthGuard';
-import { generatePlanPdf } from '@/components/PlanPdf';
+import AuthGuard from '../../../components/AuthGuard';
+import { generatePlanPdf } from '../../../components/PlanPdf';
 
 const fetcher = (url:string)=>fetch(url).then(r=>r.json());
 
@@ -15,7 +15,6 @@ export default function PlanView(){
   const prods = data?.plan_products||[];
 
   async function exportPdf(){
-    // We could capture a canvas for elevation. Skipped here for brevity.
     await generatePlanPdf({ plan, waypoints: wps, plan_products: prods });
   }
 

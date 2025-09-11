@@ -55,7 +55,6 @@ export async function generatePlanPdf(opts: {
       </Page>
     </Document>
   );
-
   const blob = await pdf(<Doc />).toBlob();
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

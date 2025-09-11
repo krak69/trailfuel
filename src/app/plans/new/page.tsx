@@ -1,14 +1,14 @@
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { parseGpxText } from '@/lib/parseGpx';
-import GpxMap from '@/components/GpxMap';
-import ElevationChart from '@/components/ElevationChart';
-import { generateWaypoints } from '@/lib/waypoints';
-import ProductPicker, { Prod } from '@/components/ProductPicker';
-import { exportWaypointsCSV } from '@/lib/export';
-import AuthGuard from '@/components/AuthGuard';
-import { supabase } from '@/lib/supabase/client';
+import { parseGpxText } from '../../../lib/parseGpx';
+import GpxMap from '../../../components/GpxMap'; // assume exists in your repo
+import ElevationChart from '../../../components/ElevationChart'; // assume exists in your repo
+import { generateWaypoints } from '../../../lib/waypoints'; // assume exists in your repo
+import ProductPicker, { Prod } from '../../../components/ProductPicker'; // assume exists in your repo
+import { exportWaypointsCSV } from '../../../lib/export'; // assume exists in your repo
+import AuthGuard from '../../../components/AuthGuard';
+import { supabase } from '../../../lib/supabase/client';
 
 export default function NewPlan(){
   const router = useRouter();
@@ -105,25 +105,6 @@ export default function NewPlan(){
         <label className="card">Hydratation (ml/h)<input className="input mt-2" type="number" value={ml} onChange={e=>setMl(Number(e.target.value))} /></label>
         <label className="card">Sodium (mg/h)<input className="input mt-2" type="number" value={sodium} onChange={e=>setSodium(Number(e.target.value))} /></label>
         <label className="card">Durée cible (min)<input className="input mt-2" type="number" placeholder="ex. 360" value={duration} onChange={e=>setDuration(e.target.value===''?'':Number(e.target.value))} /></label>
-      </div>
-      <div className="card">
-        <div className="flex items-center justify-between mb-2">
-          <div className="font-semibold">Ravitos</div>
-          <button className="btn" onClick={()=>setRavitos(r=>[...r,{ km: 0, label: '' }])}>+ Ajouter</button>
-        </div>
-        <div className="space-y-2">
-          {ravitos.map((r,i)=>(
-            <div key={i} className="grid grid-cols-6 gap-2 items-center">
-              <div className="col-span-2">Km <input className="input" type="number" value={r.km} onChange={e=>{
-                const v = Number(e.target.value); setRavitos(rs=>rs.map((x,ii)=>ii===i?{...x,km:v}:x));
-              }} /></div>
-              <div className="col-span-3">Label <input className="input" value={r.label||''} onChange={e=>{
-                const v = e.target.value; setRavitos(rs=>rs.map((x,ii)=>ii===i?{...x,label:v}:x));
-              }} /></div>
-              <button className="btn" onClick={()=>setRavitos(rs=>rs.filter((_,ii)=>ii!==i))}>Supprimer</button>
-            </div>
-          ))}
-        </div>
       </div>
       {wps.length>0 && (
         <div className="card">

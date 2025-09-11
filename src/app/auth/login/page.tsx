@@ -1,13 +1,12 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { supabase } from '@/lib/supabase/client';
+import { useRouter } from 'next/navigation';
+import { supabase } from '../../../lib/supabase/client';
 
 export default function Login(){
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const router = useRouter();
-  const sp = useSearchParams();
 
   useEffect(()=>{
     (async()=>{
