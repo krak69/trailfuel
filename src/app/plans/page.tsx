@@ -1,13 +1,15 @@
 'use client';
 import useSWR from 'swr';
 import Link from 'next/link';
+import AuthGuard from '@/components/AuthGuard';
 
 const fetcher = (url:string)=>fetch(url).then(r=>r.json());
 
 export default function PlansList(){
   const { data } = useSWR('/api/plans', fetcher);
   const plans = data?.plans || [];
-  return (
+
+  const content = (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-bold">Mes plans</h1>
@@ -30,5 +32,7 @@ export default function PlansList(){
         </tbody>
       </table>
     </div>
-  )
+  );
+
+  return <AuthGuard>{content}</AuthGuard>;
 }

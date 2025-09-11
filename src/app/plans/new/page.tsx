@@ -1,13 +1,26 @@
 'use client';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { parseGpxText } from '@/lib/parseGpx';
 import GpxMap from '@/components/GpxMap';
 import ElevationChart from '@/components/ElevationChart';
 import { generateWaypoints } from '@/lib/waypoints';
 import ProductPicker, { Prod } from '@/components/ProductPicker';
 import { exportWaypointsCSV } from '@/lib/export';
+import AuthGuard from '@/components/AuthGuard';
+import { supabase } from '@/lib/supabase/client';
 
 export default function NewPlan(){
+  const router = useRouter();
+  const [userId, setUserId] = useState<string|null>(null);
+
+  useEffect(()=>{
+    (async()=>{
+      const { data: { user } } = await supabase.auth.getUser();
+      setUserId(user?.id || null);
+    })();
+  }, []);
+
   const [gpx, setGpx] = useState<any|null>(null);
   const [parsed, setParsed] = useState<any|null>(null);
   const [hover, setHover] = useState<number|null>(null);
@@ -48,24 +61,21 @@ export default function NewPlan(){
     setGpx(geojson);
   }
 
-  // simple in-memory selection for demo export
   const [sel, setSel] = useState<Record<number, Prod[]>>({});
 
   function pickFor(index:number){
     const onSelect = (p:Prod)=>{
-      setSel(s => ({
-        ...s, [index]: [...(s[index]||[]), p]
-      }));
+      setSel(s => ({ ...s, [index]: [...(s[index]||[]), p] }));
     };
     return <ProductPicker onSelect={onSelect} />
   }
 
   async function handleSave(){
-    // send to API
     const res = await fetch('/api/plans', {
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
       body: JSON.stringify({
+        user_id: userId,
         name: parsed?.name || 'Plan sans nom',
         distance_km: parsed?.totalDistance,
         ascent_m: parsed?.totalAscent,
@@ -81,27 +91,21 @@ export default function NewPlan(){
     });
     const payload = await res.json().catch(()=>({}));
     if(!res.ok) alert(payload.error||'Erreur'); else {
-      location.href = `/plans/${payload.id}`;
+      router.push(`/plans/${payload.id}`);
     }
   }
 
-  return (
+  const content = (
     <div className="space-y-4">
       <h1 className="text-xl font-bold">Nouveau plan</h1>
       <input type="file" accept=".gpx,application/gpx+xml" onChange={onUpload} className="block" />
-      {gpx && (
-        <>
-          <GpxMap geojson={gpx} hoverIndex={hover??undefined} />
-          <ElevationChart data={chartData} onHover={setHover} />
-        </>
-      )}
+      {gpx && (<><GpxMap geojson={gpx} hoverIndex={hover??undefined} /><ElevationChart data={chartData} onHover={setHover} /></>)}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <label className="card">Glucides (g/h)<input className="input mt-2" type="number" value={carbs} onChange={e=>setCarbs(Number(e.target.value))} /></label>
         <label className="card">Hydratation (ml/h)<input className="input mt-2" type="number" value={ml} onChange={e=>setMl(Number(e.target.value))} /></label>
         <label className="card">Sodium (mg/h)<input className="input mt-2" type="number" value={sodium} onChange={e=>setSodium(Number(e.target.value))} /></label>
         <label className="card">Durée cible (min)<input className="input mt-2" type="number" placeholder="ex. 360" value={duration} onChange={e=>setDuration(e.target.value===''?'':Number(e.target.value))} /></label>
       </div>
-
       <div className="card">
         <div className="flex items-center justify-between mb-2">
           <div className="font-semibold">Ravitos</div>
@@ -121,7 +125,6 @@ export default function NewPlan(){
           ))}
         </div>
       </div>
-
       {wps.length>0 && (
         <div className="card">
           <div className="font-semibold mb-2">Waypoints</div>
@@ -139,7 +142,6 @@ export default function NewPlan(){
           </table>
         </div>
       )}
-
       <div className="flex gap-2">
         <button className="btn" onClick={()=>{
           const rows = wps.map((w,i)=>({ wp:w, products: (sel[i]||[]).map(p=>({
@@ -150,5 +152,7 @@ export default function NewPlan(){
         <button className="btn" onClick={handleSave}>Enregistrer le plan</button>
       </div>
     </div>
-  )
+  );
+
+  return <AuthGuard>{content}</AuthGuard>;
 }
