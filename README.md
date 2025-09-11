@@ -48,3 +48,6 @@ npm run dev
 ## ⚠️ Dépannage Policies déjà existantes
 - Si vous obtenez `policy "..." already exists`, exécutez `supabase/migrations/001_policies_fix.sql`.
 - Ce script supprime puis recrée proprement toutes les policies RLS.
+
+
+> Note: l'alias de chemin `@/*` pointe sur `src/*` (cf. tsconfig.json). Vérifie que les fichiers sont bien commités.
