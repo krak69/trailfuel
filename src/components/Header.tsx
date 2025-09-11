@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { supabase } from '@/lib/supabase/client';
 
 export default function Header() {
   const p = usePathname();
@@ -10,11 +11,12 @@ export default function Header() {
   return (
     <header className="flex items-center justify-between p-4">
       <Link href="/" className="font-bold text-xl">TrailFuel</Link>
-      <nav className="flex gap-2">
+      <nav className="flex items-center gap-2">
         {tab('/plans', 'Plans')}
         {tab('/products', 'Produits')}
         {tab('/stock', 'Stock')}
         <Link href="/plans/new" className="btn">Nouveau plan</Link>
+        <button className="btn" onClick={async()=>{ await supabase.auth.signOut(); location.href='/auth/login'; }}>Se déconnecter</button>
       </nav>
     </header>
   )
