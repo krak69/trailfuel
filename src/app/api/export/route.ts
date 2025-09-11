@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
-import { supabaseServer } from '@/lib/supabase/server'
+import { supabase } from '../../lib/supabase/client';
 import { PDFDocument, rgb } from '@react-pdf/renderer'
 
 export async function POST(req:NextRequest){
